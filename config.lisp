@@ -11,7 +11,8 @@
 (setf *random-state* (make-random-state t))
 
 ;; network config
-(defparameter *const-start-learning-rate* 0.25)
+(defparameter *const-start-learning-rate* 0.15)
+(defparameter *const-influence-fade* 2)
 
 (defun sq (x)
   "Square a value"
@@ -20,3 +21,7 @@
 (defmacro toggle-bool (value)
   "Toggle a boolean value in a setf-able variable/location."
   `(setf ,value (if ,value nil t)))
+
+(defmacro appendf (list value)
+  "Append an element to a list inline"
+  `(setf ,list (append ,list (list ,value))))

@@ -1,7 +1,7 @@
 (in-package :som)
 
 (defclass som ()
-  ((nodes :accessor som-nodes :initform (make-hash-table :test #'equal))
+  ((nodes :accessor som-nodes :initform nil)
    (x :accessor som-x :initarg :x)
    (y :accessor som-y :initarg :y)
    (inputs :accessor som-inputs :initarg :inputs :initform nil)
@@ -25,6 +25,7 @@
                              :map-radius map-radius
                              :time-const (/ num-iterations (log map-radius))
                              :learning-rate *const-start-learning-rate*)))
+    (setf (som-nodes som) (make-hash-table :test #'equal :size (* x y)))
     (dotimes (y y)
       (dotimes (x x)
         (setf (gethash `(,x ,y) (som-nodes som)) 
@@ -49,6 +50,7 @@
 (defmethod som-epoch ((som som))
   "Run a som epoch. Gets the best node for an input vector and adjusts other
    nodes according to that one using neighborhood/distance functions."
+  ;; check if we're "not even supposed to be here today"
   (when (or (som-paused som)
             (not (som-training som)))
     (return-from som-epoch nil))
@@ -60,7 +62,7 @@
       (let ((dist-sq (+ (sq (- (node-x best-node) (node-x node)))
                         (sq (- (node-y best-node) (node-y node))))))
         (when (< dist-sq search-radius-sq)
-          (let ((influence (exp (- (/ dist-sq (* search-radius-sq 2))))))
+          (let ((influence (exp (- (/ dist-sq (* search-radius-sq *const-influence-fade*))))))
             (adjust-node-weights node input-vec (som-learning-rate som) influence)))))
     (setf (som-learning-rate som)
           (* (exp (- (/ (som-iteration som) (som-num-iterations som))))

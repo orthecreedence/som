@@ -32,7 +32,7 @@
             (apply fn args)
             (format t "sry, the method ~a doesn't exist in this closure~%" fn))))))
 
-(defun run (inputs grid iterations)
+(defun start-som (inputs grid iterations)
   "Run the fuckin thing."
   (let* ((som (make-som (nth 0 grid) (nth 1 grid) iterations inputs))
          (draw-cl (make-som-closure som))
@@ -45,11 +45,16 @@
     (loop while (som-training som) do
       (som-epoch som))))
 
+(defun make-points (grid)
+  (let ((points nil)
+        (gx (nth 0 grid))
+        (gy (nth 1 grid)))
+    (dotimes (y gy)
+      (dotimes (x gx)
+        (appendf points `(,(/ x gx) ,(/ y gy)))))
+    points))
+
 (defparameter *grid* '(20 20))
-(defparameter *inputs*
-  (let ((grid nil))
-    (dotimes (y (nth 1 *grid*))
-      (dotimes (x (nth 0 *grid*))
-        (setf grid (append grid `((,(/ x (nth 0 *grid*)) ,(/ y (nth 1 *grid*))))))))
-    grid))
-(run *inputs* *grid* 2000)
+(defun run (iterations)
+  (start-som (make-points *grid*) *grid* iterations))
+(run 2000)
